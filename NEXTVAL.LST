@@ -1,0 +1,125 @@
+Microsoft (R) Macro Assembler Version 6.11		    03/05/19 20:17:17
+nextval.asm						     Page 1 - 1
+
+
+				;---------------------------------------------------------------------
+				; Program:   nextval subroutine
+				;
+				; Function:  Find next mouse move in an array 15 by 30.
+				;            We can move into a position if its contents is blank ( 20h ).
+				;
+				; Input:     Calling sequence is:
+				;            x    pointer   si
+				;            y    pointer   di
+				;            dir  pointer   bx
+				;            maze pointer   bp
+				;
+				; Output:    x,y,dir modified in caller's data segment
+				;
+				; Owner:     Dana A. Lasher, Ian Smart
+				;
+				; Date:      Update Reason
+				; --------------------------
+				; 11/06/2016 Original version
+				; 03/05/2019 First Draft
+				;
+				;---------------------------------------
+				         .model    small               ;64k code and 64k data
+				         .8086                         ;only allow 8086 instructions
+				         public    nextval             ;allow extrnal programs to call
+				;---------------------------------------
+
+
+				;---------------------------------------
+ 0000				         .data                         ;start the data segment
+ 0000 1E			a         db       30                  ;char to represent a new 
+ 0001 00			b         db       0                   ;char to represent a new 
+ 0002 20			block     db       20h                 ;char to represent a blocked tile
+				;---------------------------------------
+
+
+				;---------------------------------------
+ 0000				         .code                         ;start the code segment
+ 0000				start:                                 ;start of the program
+ 0000  B8 ---- R		         mov       ax,@data            ;set accessability
+ 0003  8E D8			         mov       ds,ax               ;to the data segment
+				;---------------------------------------
+				; Save any modified registers
+				;---------------------------------------
+ 0005				nextval:                               ;
+ 0005  8A 1D			         mov       bl,[di]             ;Load bl with the y value
+ 0007  8A 3C			         mov       bh,[si]             ;Load bh with the x value
+ 0009  B6 00			         mov       dh,0                ;Set the direction variable
+ 000B  8A C3			         mov       al,bl               ;
+ 000D  88 3E 0001 R		         mov       b,bh                ;
+ 0011  FE C8			         dec       al                  ;
+ 0013  FE 0E 0001 R		         dec       b                   ;
+ 0017  F6 26 0000 R		         mul       a                   ;
+ 001B  02 06 0001 R		         add       al,b                ;
+ 001F  3E: 03 46 00		         add       ax,ds:[bp]          ;
+				;---------------------------------------
+				; Code to make 1 move in the maze
+				;---------------------------------------
+				         cmp       block,ds:[bp + ax]  ;
+nextval.asm(59): error A2031: must be index or base register
+ 0023  75 0E			         jne       right               ;
+ 0033				back:                                  ;         
+				                                       ;
+ 0033				left:                                  ;
+				                                       ;
+ 0033				forward:                               ;
+				                                       ;
+ 0033				right:                                 ;
+				                                       ;
+				;---------------------------------------
+				; Restore registers and return
+				;---------------------------------------
+ 0033				exit:                                  ;
+ 0033  88 1D			         mov       byte ptr [di],bl    ;
+ 0035  88 3C			         mov       byte ptr [si],bh    ;
+ 0037  88 37			         mov       byte ptr [bx],dh    ;
+ 0039  C3			         ret                           ;return
+				;---------------------------------------
+				         end
+ 
+Microsoft (R) Macro Assembler Version 6.11		    03/05/19 20:17:17
+nextval.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+DGROUP . . . . . . . . . . . . .	GROUP
+_DATA  . . . . . . . . . . . . .	16 Bit	 0003	  Word	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	16 Bit	 003A	  Word	  Public  'CODE'	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+@CodeSize  . . . . . . . . . . .	Number	 0000h	 
+@DataSize  . . . . . . . . . . .	Number	 0000h	 
+@Interface . . . . . . . . . . .	Number	 0000h	 
+@Model . . . . . . . . . . . . .	Number	 0002h	 
+@code  . . . . . . . . . . . . .	Text   	 _TEXT
+@data  . . . . . . . . . . . . .	Text   	 DGROUP
+@fardata?  . . . . . . . . . . .	Text   	 FAR_BSS
+@fardata . . . . . . . . . . . .	Text   	 FAR_DATA
+@stack . . . . . . . . . . . . .	Text   	 DGROUP
+a  . . . . . . . . . . . . . . .	Byte	 0000	  _DATA	
+back . . . . . . . . . . . . . .	L Near	 0033	  _TEXT	
+block  . . . . . . . . . . . . .	Byte	 0002	  _DATA	
+b  . . . . . . . . . . . . . . .	Byte	 0001	  _DATA	
+exit . . . . . . . . . . . . . .	L Near	 0033	  _TEXT	
+forward  . . . . . . . . . . . .	L Near	 0033	  _TEXT	
+left . . . . . . . . . . . . . .	L Near	 0033	  _TEXT	
+nextval  . . . . . . . . . . . .	L Near	 0005	  _TEXT	Public
+right  . . . . . . . . . . . . .	L Near	 0033	  _TEXT	
+start  . . . . . . . . . . . . .	L Near	 0000	  _TEXT	
+
+	   0 Warnings
+	   1 Errors

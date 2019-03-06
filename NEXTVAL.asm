@@ -28,29 +28,51 @@
 
 ;---------------------------------------
          .data                         ;start the data segment
-         
+a         db       30                  ;char to represent a new 
+b         db       0                   ;char to represent a new 
+block     db       20h                 ;char to represent a blocked tile
 ;---------------------------------------
 
 
 ;---------------------------------------
          .code                         ;start the code segment
+start:                                 ;start of the program
+         mov       ax,@data            ;set accessability
+         mov       ds,ax               ;to the data segment
 ;---------------------------------------
 ; Save any modified registers
 ;---------------------------------------
 nextval:                               ;
-                                       ;
-                                       ;
+         mov       bl,[di]             ;Load bl with the y value
+         mov       bh,[si]             ;Load bh with the x value
+         mov       dh,0                ;Set the direction variable
+         mov       al,bl               ;
+         mov       b,bh                ;
+         dec       al                  ;
+         dec       b                   ;
+         mul       a                   ;
+         add       al,b                ;
+         add       ax,ds:[bp]          ;
 ;---------------------------------------
 ; Code to make 1 move in the maze
 ;---------------------------------------
+         cmp       block,ax ;
+         jne       right               ;
+back:                                  ;         
                                        ;
+left:                                  ;
                                        ;
+forward:                               ;
+                                       ;
+right:                                 ;
                                        ;
 ;---------------------------------------
 ; Restore registers and return
 ;---------------------------------------
 exit:                                  ;
-                                       ;
+         mov       byte ptr [di],bl    ;
+         mov       byte ptr [si],bh    ;
+         mov       byte ptr [bx],dh    ;
          ret                           ;return
 ;---------------------------------------
          end
