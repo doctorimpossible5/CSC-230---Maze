@@ -12,7 +12,7 @@
 ;
 ; Output:    x,y,dir modified in caller's data segment
 ;
-; Owner:     Dana A. Lasher, Ian Smart Thomas Landsb
+; Owner:     Dana A. Lasher, Ian Smart Thomas Landsberg
 ;
 ; Date:      Update Reason
 ; --------------------------
@@ -41,7 +41,6 @@ empty     db       20h                 ;char to represent a empty tile
 nextval:                               ;
          push      ax                  ;Save the address of di
          push      cx                  ;Save the address of si
-         push      bx                  ;Save the address of bx
          push      bp                  ;Save the address of the maze
          push      dx                  ;Save the address of the dx
 ;---------------------------------------
@@ -53,8 +52,7 @@ increment:                             ;Label for the begining of the loop
          mov       al,[di]             ;Load al with the y value
          mov       cl,[si]             ;Load cl with the x value
          sub       byte ptr [bx],1     ;Move to the next direction
-         cmp       byte ptr [bx],0     ;Check to see if the direction is out of bounds
-         jne       check               ;If not continue
+         jnz       check               ;If not continue
          mov       byte ptr [bx],4     ;If it is out of bounds, reset it
 ;---------------------------------------
 ; Checks to see what the current direction
@@ -119,8 +117,7 @@ exit:
 ; Restore registers and return
 ;---------------------------------------
          pop       dx                  ;Restore the address of dx
-         pop       bp                  ;Restore the address of the maze
-         pop       bx                  ;Restore the address of the direction
+         pop       bp                  ;Restore the address of the maze\
          pop       cx                  ;Restore the address of si
          pop       ax                  ;Restore the address of di
 ;---------------------------------------
