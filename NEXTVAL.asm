@@ -28,9 +28,7 @@
 
 ;---------------------------------------
          .data                         ;start the data segment
-a         db       30                  ;char to represent a new 
-b         db       0                   ;char to represent a new
-y         db       0                   ;char to hold y coordinate
+a         db       30                  ;char to represent a new
 empty     db       20h                 ;char to represent a empty tile
 east      db       1                   ;Represents east direction
 south     db       2                   ;Represents south direction
@@ -48,67 +46,76 @@ start:                                 ;start of the program
 ; Save any modified registers
 ;---------------------------------------
 nextval:                               ;
-         push      di                  ;Save the address of di
-         push      si                  ;Save the address of si
+         push      ax                  ;Save the address of di
+         push      cx                  ;Save the address of si
          push      bx                  ;Save the address of bx
          push      bp                  ;Save the address of the maze
          mov       al,[di]             ;Load al with the y value
          mov       bl,[si]             ;Load bl with the x value
          mov       ch,byte ptr [bx]    ;Save the direction value
-         mov       b,bl                ;Save x coordinate to b variable
-         mov       y,al                ;Save y coordinate to y variable
          dec       al                  ;Decrement y
          dec       bl                  ;Decrement x
-         mul       a                   ;Multiply y by columns
+         mul       [a]                 ;Multiply y by columns
          add       ax,bx               ;Add x to calculate offset
 ;---------------------------------------
 ; Code to make 1 move in the maze
 ;---------------------------------------
+         add       ax,30               ;
+         add       bp,ax               ;
+         mov       cl,ds:[bp]          ;
+         mov       south,cl            ;
+                                       ;
+         sub       bp,60               ;
+         mov       cl,ds:[bp]          ;
+         mov       north,cl            ;
+                                       ;
+         add       bp,61               ;
+         mov       cl,ds:[bp]          ;
+         mov       east,cl             ;
+                                       ;
+         sub       bp,2                ;
+         mov       cl,ds:[bp]          ;
+         mov       west,cl             ;
+increment:                             ;
+         inc       ch                  ;
+         cmp       ch,5                ;
+         jne       check               ;
+         mov       ch,1                ;
+check:                                 ;
+         cmp       ch,2                ;
+         jb        right               ;
+         je        down                ;
+         cmp       ch,4                ;
+         jb        left                ;
+         je        upward              ;
 right:                                 ;
-         mov       ch,2                ;Set the direction to south         
-         add       ax,30               ;Add 30 to find box to the south
-         add       bp,ax               ;Point to the south box
-         mov       cl,ds:[bp]          ;Get the value at the pointed box
-         cmp       cl,[empty]          ;Check if empty
-         jne       forward             ;Not empty, try forward
-         dec       y                   ;Update y coordinate
+         cmp       [east],20h          ;Check if empty
+         jne       increment           ;Not empty, try again
+         inc       byte ptr [si]       ;Update x coordinate
          jmp       exit                ;Done, go to exit and restore
-forward:                               ;
-         mov       ch,1                ;Set the direction variable
-         sub       bp,ax               ;Reset the pointer to mouse location
-         sub       ax,29               ;Find the box to the east
-         add       bp,ax               ;Point to the east box
-         mov       cl,ds:[bp]          ;Get the value at the pointed box
-         cmp       cl,[empty]          ;Check if empty
-         jne       left                ;Not empty, try left
-         inc       b                   ;Update x coordinate
+upward:                                ;
+         cmp       [north],20h         ;Check if empty
+         jne       increment           ;Not empty, try again
+         dec       byte ptr [di]       ;Update y coordinate
          jmp       exit                ;Done, go to exit and restore
 left:                                  ;
-         mov       ch,4                ;Set the direction variable
-         sub       bp,ax               ;Reset the pointer to mouse location
-         sub       ax,31               ;Find the box to the north
-         add       bp,ax               ;Point to the north box
-         mov       cl,ds:[bp]          ;Get the value at the pointed box
-         cmp       cl,[empty]          ;Check if empty
-         jne       back                ;Not empty, try backwards
-         dec       y                   ;Update y coordinate
+         cmp       [west],20h          ;Check if empty
+         jne       increment           ;Not empty, try again
+         dec       byte ptr [si]       ;Update x coordinate
          jmp       exit                ;Done, go to exit and restore
-back:                                  ;
-         mov       ch,3                ;Set the direction variable
-         dec       b                   ;Update x coordinate                              
+down:                                  ;
+         cmp       [south],20h         ;Check if empty
+         jne       increment           ;Not empty, try again
+         inc       byte ptr [di]       ;Update y coordinate                              
 ;---------------------------------------
 ; Restore registers and return
 ;---------------------------------------
-exit:                                  ;
-         mov       bh,b                ;Move x into bh
-         mov       al,y                ;Move y into ch
-         mov       byte ptr [di],al    ;Restore new y value
-         mov       byte ptr [si],bh    ;Restore new x value
+exit:
          mov       byte ptr [bx],ch    ;Restore the direction value
          pop       bp                  ;Restore the address of the maze
          pop       bx                  ;Restore the address of the direction
-         pop       si                  ;Restore the address of si
-         pop       di                  ;Restore the address of di
+         pop       cx                  ;Restore the address of si
+         pop       ax                  ;Restore the address of di
          ret                           ;return
 ;---------------------------------------
          end
