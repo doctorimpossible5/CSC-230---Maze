@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.11		    03/05/19 20:17:17
+Microsoft (R) Macro Assembler Version 6.11		    03/06/19 22:18:38
 nextval.asm						     Page 1 - 1
 
 
@@ -32,57 +32,82 @@ nextval.asm						     Page 1 - 1
 
 				;---------------------------------------
  0000				         .data                         ;start the data segment
- 0000 1E			a         db       30                  ;char to represent a new 
- 0001 00			b         db       0                   ;char to represent a new 
- 0002 20			block     db       20h                 ;char to represent a blocked tile
+ 0000 1E			a         db       30                  ;char to represent a new
+ 0001 20			empty     db       20h                 ;char to represent a empty tile
 				;---------------------------------------
 
 
 				;---------------------------------------
  0000				         .code                         ;start the code segment
- 0000				start:                                 ;start of the program
- 0000  B8 ---- R		         mov       ax,@data            ;set accessability
- 0003  8E D8			         mov       ds,ax               ;to the data segment
 				;---------------------------------------
 				; Save any modified registers
 				;---------------------------------------
- 0005				nextval:                               ;
- 0005  8A 1D			         mov       bl,[di]             ;Load bl with the y value
- 0007  8A 3C			         mov       bh,[si]             ;Load bh with the x value
- 0009  B6 00			         mov       dh,0                ;Set the direction variable
- 000B  8A C3			         mov       al,bl               ;
- 000D  88 3E 0001 R		         mov       b,bh                ;
- 0011  FE C8			         dec       al                  ;
- 0013  FE 0E 0001 R		         dec       b                   ;
- 0017  F6 26 0000 R		         mul       a                   ;
- 001B  02 06 0001 R		         add       al,b                ;
- 001F  3E: 03 46 00		         add       ax,ds:[bp]          ;
+ 0000				nextval:                               ;
+ 0000  50			         push      ax                  ;Save the address of di
+ 0001  51			         push      cx                  ;Save the address of si
+ 0002  53			         push      bx                  ;Save the address of bx
+ 0003  55			         push      bp                  ;Save the address of the maze
+ 0004  52			         push      dx                  ;
 				;---------------------------------------
 				; Code to make 1 move in the maze
 				;---------------------------------------
-				         cmp       block,ds:[bp + ax]  ;
-nextval.asm(59): error A2031: must be index or base register
- 0023  75 0E			         jne       right               ;
- 0033				back:                                  ;         
-				                                       ;
+ 0005  80 07 02			         add       byte ptr [bx],2     ;
+ 0008				increment:                             ;
+ 0008  8A 05			         mov       al,[di]             ;Load al with the y value
+ 000A  8A 0C			         mov       cl,[si]             ;Load cl with the x value
+ 000C  80 2F 01			         sub       byte ptr [bx],1     ;
+ 000F  80 3F 00			         cmp       byte ptr [bx],0     ;
+ 0012  75 03			         jne       check               ;
+ 0014  C6 07 04			         mov       byte ptr [bx],4     ;
+ 0017				check:                                 ;
+ 0017  80 3F 02			         cmp       byte ptr [bx],2     ;
+ 001A  72 12			         jb        right               ;
+ 001C  74 1A			         je        down                ;
+ 001E  80 3F 04			         cmp       byte ptr [bx],4     ;
+ 0021  72 10			         jb        left                ;
+ 0023  74 05			         je        upward              ;
+ 0025				above:                                 ;
+ 0025  C6 07 01			         mov       byte ptr [bx],1     ;
+ 0028  EB 04			         jmp       right               ;
+ 002A				upward:                                ;
+ 002A  2C 01			         sub       al,1                ;
+ 002C  EB 0C			         jmp       calculate           ;
+ 002E				right:                                 ;
+ 002E  80 C1 01			         add       cl,1                ;
+ 0031  EB 07			         jmp       calculate           ;
  0033				left:                                  ;
-				                                       ;
- 0033				forward:                               ;
-				                                       ;
- 0033				right:                                 ;
-				                                       ;
+ 0033  80 E9 01			         sub       cl,1                ;
+ 0036  EB 02			         jmp       calculate           ;
+ 0038				down:                                  ;
+ 0038  04 01			         add       al,1                ;
+ 003A				calculate:                             ;
+ 003A  8A F0			         mov       dh,al               ;
+ 003C  8A D1			         mov       dl,cl               ;
+ 003E  FE C8			         dec       al                  ;Decrement y
+ 0040  FE C9			         dec       cl                  ;Decrement x
+ 0042  F6 26 0000 R		         mul       [a]                 ;Multiply y by columns
+ 0046  03 C1			         add       ax,cx               ;Add x to calculate offset
+ 0048  03 E8			         add       bp,ax               ;
+ 004A  3E: 8A 4E 00		         mov       cl,ds:[bp]          ;
+ 004E  2B E8			         sub       bp,ax               ;
+ 0050  80 F9 20			         cmp       cl,20h              ;Check if empty
+ 0053  75 B3			         jne       increment           ;Not empty, try again
 				;---------------------------------------
 				; Restore registers and return
 				;---------------------------------------
- 0033				exit:                                  ;
- 0033  88 1D			         mov       byte ptr [di],bl    ;
- 0035  88 3C			         mov       byte ptr [si],bh    ;
- 0037  88 37			         mov       byte ptr [bx],dh    ;
- 0039  C3			         ret                           ;return
+ 0055				exit:
+ 0055  88 35			         mov       [di],dh             ;
+ 0057  88 14			         mov       [si],dl             ;
+ 0059  5A			         pop       dx                  ;
+ 005A  5D			         pop       bp                  ;Restore the address of the maze
+ 005B  5B			         pop       bx                  ;Restore the address of the direction
+ 005C  59			         pop       cx                  ;Restore the address of si
+ 005D  58			         pop       ax                  ;Restore the address of di
+ 005E  C3			         ret                           ;return
 				;---------------------------------------
 				         end
  
-Microsoft (R) Macro Assembler Version 6.11		    03/05/19 20:17:17
+Microsoft (R) Macro Assembler Version 6.11		    03/06/19 22:18:38
 nextval.asm						     Symbols 2 - 1
 
 
@@ -93,8 +118,8 @@ Segments and Groups:
                 N a m e                 Size     Length   Align   Combine Class
 
 DGROUP . . . . . . . . . . . . .	GROUP
-_DATA  . . . . . . . . . . . . .	16 Bit	 0003	  Word	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	16 Bit	 003A	  Word	  Public  'CODE'	
+_DATA  . . . . . . . . . . . . .	16 Bit	 0002	  Word	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	16 Bit	 005F	  Word	  Public  'CODE'	
 
 
 Symbols:
@@ -110,16 +135,18 @@ Symbols:
 @fardata?  . . . . . . . . . . .	Text   	 FAR_BSS
 @fardata . . . . . . . . . . . .	Text   	 FAR_DATA
 @stack . . . . . . . . . . . . .	Text   	 DGROUP
+above  . . . . . . . . . . . . .	L Near	 0025	  _TEXT	
 a  . . . . . . . . . . . . . . .	Byte	 0000	  _DATA	
-back . . . . . . . . . . . . . .	L Near	 0033	  _TEXT	
-block  . . . . . . . . . . . . .	Byte	 0002	  _DATA	
-b  . . . . . . . . . . . . . . .	Byte	 0001	  _DATA	
-exit . . . . . . . . . . . . . .	L Near	 0033	  _TEXT	
-forward  . . . . . . . . . . . .	L Near	 0033	  _TEXT	
+calculate  . . . . . . . . . . .	L Near	 003A	  _TEXT	
+check  . . . . . . . . . . . . .	L Near	 0017	  _TEXT	
+down . . . . . . . . . . . . . .	L Near	 0038	  _TEXT	
+empty  . . . . . . . . . . . . .	Byte	 0001	  _DATA	
+exit . . . . . . . . . . . . . .	L Near	 0055	  _TEXT	
+increment  . . . . . . . . . . .	L Near	 0008	  _TEXT	
 left . . . . . . . . . . . . . .	L Near	 0033	  _TEXT	
-nextval  . . . . . . . . . . . .	L Near	 0005	  _TEXT	Public
-right  . . . . . . . . . . . . .	L Near	 0033	  _TEXT	
-start  . . . . . . . . . . . . .	L Near	 0000	  _TEXT	
+nextval  . . . . . . . . . . . .	L Near	 0000	  _TEXT	Public
+right  . . . . . . . . . . . . .	L Near	 002E	  _TEXT	
+upward . . . . . . . . . . . . .	L Near	 002A	  _TEXT	
 
 	   0 Warnings
-	   1 Errors
+	   0 Errors

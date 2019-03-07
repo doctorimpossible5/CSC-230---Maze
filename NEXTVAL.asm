@@ -30,18 +30,11 @@
          .data                         ;start the data segment
 a         db       30                  ;char to represent a new
 empty     db       20h                 ;char to represent a empty tile
-east      db       1                   ;Represents east direction
-south     db       2                   ;Represents south direction
-west      db       3                   ;Represents west direction
-north     db       4                   ;Represents north direction
 ;---------------------------------------
 
 
 ;---------------------------------------
          .code                         ;start the code segment
-start:                                 ;start of the program
-         mov       ax,@data            ;set accessability
-         mov       ds,ax               ;to the data segment
 ;---------------------------------------
 ; Save any modified registers
 ;---------------------------------------
@@ -50,68 +43,58 @@ nextval:                               ;
          push      cx                  ;Save the address of si
          push      bx                  ;Save the address of bx
          push      bp                  ;Save the address of the maze
-         mov       al,[di]             ;Load al with the y value
-         mov       bl,[si]             ;Load bl with the x value
-         mov       ch,byte ptr [bx]    ;Save the direction value
-         dec       al                  ;Decrement y
-         dec       bl                  ;Decrement x
-         mul       [a]                 ;Multiply y by columns
-         add       ax,bx               ;Add x to calculate offset
+         push      dx                  ;
 ;---------------------------------------
 ; Code to make 1 move in the maze
 ;---------------------------------------
-         add       ax,30               ;
-         add       bp,ax               ;
-         mov       cl,ds:[bp]          ;
-         mov       south,cl            ;
-                                       ;
-         sub       bp,60               ;
-         mov       cl,ds:[bp]          ;
-         mov       north,cl            ;
-                                       ;
-         add       bp,61               ;
-         mov       cl,ds:[bp]          ;
-         mov       east,cl             ;
-                                       ;
-         sub       bp,2                ;
-         mov       cl,ds:[bp]          ;
-         mov       west,cl             ;
+         add       byte ptr [bx],2     ;
 increment:                             ;
-         inc       ch                  ;
-         cmp       ch,5                ;
+         mov       al,[di]             ;Load al with the y value
+         mov       cl,[si]             ;Load cl with the x value
+         sub       byte ptr [bx],1     ;
+         cmp       byte ptr [bx],0     ;
          jne       check               ;
-         mov       ch,1                ;
+         mov       byte ptr [bx],4     ;
 check:                                 ;
-         cmp       ch,2                ;
+         cmp       byte ptr [bx],2     ;
          jb        right               ;
          je        down                ;
-         cmp       ch,4                ;
+         cmp       byte ptr [bx],4     ;
          jb        left                ;
          je        upward              ;
-right:                                 ;
-         cmp       [east],20h          ;Check if empty
-         jne       increment           ;Not empty, try again
-         inc       byte ptr [si]       ;Update x coordinate
-         jmp       exit                ;Done, go to exit and restore
+above:                                 ;
+         mov       byte ptr [bx],1     ;
+         jmp       right               ;
 upward:                                ;
-         cmp       [north],20h         ;Check if empty
-         jne       increment           ;Not empty, try again
-         dec       byte ptr [di]       ;Update y coordinate
-         jmp       exit                ;Done, go to exit and restore
+         sub       al,1                ;
+         jmp       calculate           ;
+right:                                 ;
+         add       cl,1                ;
+         jmp       calculate           ;
 left:                                  ;
-         cmp       [west],20h          ;Check if empty
-         jne       increment           ;Not empty, try again
-         dec       byte ptr [si]       ;Update x coordinate
-         jmp       exit                ;Done, go to exit and restore
+         sub       cl,1                ;
+         jmp       calculate           ;
 down:                                  ;
-         cmp       [south],20h         ;Check if empty
+         add       al,1                ;
+calculate:                             ;
+         mov       dh,al               ;
+         mov       dl,cl               ;
+         dec       al                  ;Decrement y
+         dec       cl                  ;Decrement x
+         mul       [a]                 ;Multiply y by columns
+         add       ax,cx               ;Add x to calculate offset
+         add       bp,ax               ;
+         mov       cl,ds:[bp]          ;
+         sub       bp,ax               ;
+         cmp       cl,20h              ;Check if empty
          jne       increment           ;Not empty, try again
-         inc       byte ptr [di]       ;Update y coordinate                              
 ;---------------------------------------
 ; Restore registers and return
 ;---------------------------------------
 exit:
-         mov       byte ptr [bx],ch    ;Restore the direction value
+         mov       [di],dh             ;
+         mov       [si],dl             ;
+         pop       dx                  ;
          pop       bp                  ;Restore the address of the maze
          pop       bx                  ;Restore the address of the direction
          pop       cx                  ;Restore the address of si
